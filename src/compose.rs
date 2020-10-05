@@ -25,4 +25,10 @@ impl ComposeProject {
             .args(arguments)
             .output()
     }
+
+    fn docker_compose(&self, arguments: &[&str])-> Result<Output> {
+        let mut compose_arguments = vec!["-f", self.compose_file.to_str().expect("Path parse failed")];
+        compose_arguments.extend_from_slice(arguments);
+        self.execute_in_dir("docker-compose", compose_arguments.as_slice())
+    }
 }
