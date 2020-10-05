@@ -1,4 +1,6 @@
-use std::path::PathBuf;
+use std::io::Result;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
 
 pub struct ComposeProject {
     compose_file: PathBuf,
@@ -9,5 +11,18 @@ impl ComposeProject {
         ComposeProject {
             compose_file: compose_file.to_owned(),
         }
+    }
+
+    fn working_directory(&self) -> &Path {
+        self.compose_file
+            .parent()
+            .expect("Failed to get parent of compose file")
+    }
+
+    fn execute_in_dir(&self, command: &str, arguments: &[&str]) -> Result<Output> {
+        Command::new(command)
+            .current_dir(self.working_directory())
+            .args(arguments)
+            .output()
     }
 }
