@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -25,5 +26,16 @@ impl ComposeProject {
             .arg("pull")
             .status()
             .is_ok()
+    }
+
+    pub fn get_images(&self) -> HashSet<String> {
+        let output = Command::new("docker-compose")
+            .current_dir(self.working_directory())
+            .args(&["-f", &self.compose_file.to_string_lossy()])
+            .args(&["images", "-q"])
+            .output()
+            .expect("Failed to get images");
+        let stdout = String::from_utf8(output.stdout).expect("Failed to parse output");
+        stdout.trim().split('\n').map(String::from).collect()
     }
 }
