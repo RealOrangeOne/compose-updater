@@ -1,6 +1,9 @@
 use glob::glob;
 use std::path::PathBuf;
+use std::process::exit;
 use structopt::StructOpt;
+
+mod compose;
 
 #[derive(StructOpt, Debug)]
 #[structopt()]
@@ -24,5 +27,18 @@ fn get_files(files: &[String]) -> Option<Vec<PathBuf>> {
 
 fn main() {
     let opts = Opt::from_args();
-    println!("{:?}", get_files(&opts.files));
+    if opts.files.is_empty() {
+        println!("Must specify some files");
+        exit(1);
+    }
+    let compose_files = match get_files(&opts.files) {
+        Some(f) => f,
+        None => exit(1),
+    };
+
+    let compose_projects: Vec<compose::ComposeProject> = compose_files
+        .iter()
+        .map(compose::ComposeProject::new)
+        .collect();
+    println!("Found {} projects", compose_projects.len());
 }
