@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate log;
 use glob::glob;
 use std::path::PathBuf;
 use std::process::exit;
@@ -10,6 +12,9 @@ mod compose;
 struct Opt {
     #[structopt(name = "files")]
     files: Vec<String>,
+
+    #[structopt(short, long)]
+    verbose: bool,
 }
 
 fn get_files(files: &[String]) -> Option<Vec<PathBuf>> {
@@ -27,10 +32,22 @@ fn get_files(files: &[String]) -> Option<Vec<PathBuf>> {
 
 fn main() {
     let opts = Opt::from_args();
+    env_logger::builder()
+        .format_timestamp(None)
+        .filter_level(if opts.verbose {
+            log::LevelFilter::Debug
+        } else {
+            log::LevelFilter::Info
+        })
+        .format_module_path(false)
+        .init();
+
     if opts.files.is_empty() {
-        println!("Must specify some files");
+        error!("Must specify some files");
         exit(1);
     }
+
+    debug!("Searching for files...");
     let compose_files = match get_files(&opts.files) {
         Some(f) => f,
         None => exit(1),
@@ -40,5 +57,6 @@ fn main() {
         .iter()
         .map(compose::ComposeProject::new)
         .collect();
-    println!("Found {} projects", compose_projects.len());
+
+    info!("Found {} projects", compose_projects.len());
 }
