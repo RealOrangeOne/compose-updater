@@ -22,12 +22,18 @@ fn get_files(files: &[String]) -> Option<Vec<PathBuf>> {
     for file in files {
         for path in glob(&file).ok()?.filter_map(Result::ok) {
             if path.is_file() {
-                all_files.push(path);
+                if let Ok(canonical_path) = path.canonicalize() {
+                    all_files.push(canonical_path);
+                }
             }
         }
     }
 
     Some(all_files)
+}
+
+fn do_update(compose_project: compose::ComposeProject) {
+    compose_project.pull();
 }
 
 fn main() {
@@ -59,4 +65,8 @@ fn main() {
         .collect();
 
     info!("Found {} projects", compose_projects.len());
+
+    for compose_project in compose_projects {
+        do_update(compose_project);
+    }
 }

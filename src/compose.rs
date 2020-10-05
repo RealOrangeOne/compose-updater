@@ -1,6 +1,5 @@
-use std::io::Result;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::Command;
 
 pub struct ComposeProject {
     compose_file: PathBuf,
@@ -19,16 +18,12 @@ impl ComposeProject {
             .expect("Failed to get parent of compose file")
     }
 
-    fn execute_in_dir(&self, command: &str, arguments: &[&str]) -> Result<Output> {
-        Command::new(command)
+    pub fn pull(&self) -> bool {
+        Command::new("docker-compose")
             .current_dir(self.working_directory())
-            .args(arguments)
-            .output()
-    }
-
-    fn docker_compose(&self, arguments: &[&str])-> Result<Output> {
-        let mut compose_arguments = vec!["-f", self.compose_file.to_str().expect("Path parse failed")];
-        compose_arguments.extend_from_slice(arguments);
-        self.execute_in_dir("docker-compose", compose_arguments.as_slice())
+            .args(&["-f", &self.compose_file.to_string_lossy()])
+            .arg("pull")
+            .status()
+            .is_ok()
     }
 }
