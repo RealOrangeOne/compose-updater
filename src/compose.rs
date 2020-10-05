@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::fmt;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 pub struct ComposeProject {
     compose_file: PathBuf,
@@ -38,6 +38,32 @@ impl ComposeProject {
             .expect("Failed to get images");
         let stdout = String::from_utf8(output.stdout).expect("Failed to parse output");
         stdout.trim().split('\n').map(String::from).collect()
+    }
+
+    pub fn down(&self) -> bool {
+        match Command::new("docker-compose")
+            .stdout(Stdio::null())
+            .current_dir(self.working_directory())
+            .args(&["-f", &self.compose_file.to_string_lossy()])
+            .arg("down")
+            .status()
+        {
+            Ok(s) => s.success(),
+            Err(_) => false,
+        }
+    }
+
+    pub fn up(&self) -> bool {
+        match Command::new("docker-compose")
+            .stdout(Stdio::null())
+            .current_dir(self.working_directory())
+            .args(&["-f", &self.compose_file.to_string_lossy()])
+            .args(&["up", "-d"])
+            .status()
+        {
+            Ok(s) => s.success(),
+            Err(_) => false,
+        }
     }
 }
 

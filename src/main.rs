@@ -46,6 +46,12 @@ fn do_update(compose_project: compose::ComposeProject) {
 
     if post_images == pre_images {
         info!("No change to images");
+    } else {
+        info!("Changes detected - Cycling container");
+        warn!("Stopping container");
+        compose_project.down();
+        warn!("Starting container");
+        compose_project.up();
     }
 }
 
