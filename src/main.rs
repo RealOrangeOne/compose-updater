@@ -33,7 +33,20 @@ fn get_files(files: &[String]) -> Option<Vec<PathBuf>> {
 }
 
 fn do_update(compose_project: compose::ComposeProject) {
+    info!("Processing {}...", compose_project);
+    let pre_images = compose_project.get_images();
+    if pre_images.is_empty() {
+        warn!("no running images, skipping");
+        return;
+    }
+
     compose_project.pull();
+
+    let post_images = compose_project.get_images();
+
+    if post_images == pre_images {
+        info!("No change to images");
+    }
 }
 
 fn main() {

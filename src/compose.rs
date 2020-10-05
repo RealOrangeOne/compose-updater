@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fmt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -37,5 +38,11 @@ impl ComposeProject {
             .expect("Failed to get images");
         let stdout = String::from_utf8(output.stdout).expect("Failed to parse output");
         stdout.trim().split('\n').map(String::from).collect()
+    }
+}
+
+impl fmt::Display for ComposeProject {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.compose_file.display())
     }
 }
