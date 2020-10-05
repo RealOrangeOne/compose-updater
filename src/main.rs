@@ -46,16 +46,25 @@ fn do_update(compose_project: compose::ComposeProject, force_cycle: bool, force_
         return;
     }
 
-    compose_project.pull();
+    if !compose_project.pull() {
+        error!("Pull failed");
+        return;
+    }
 
     let post_images = compose_project.get_images();
 
     if force_cycle || post_images != pre_images {
         info!("Changes detected - Cycling container");
         warn!("Stopping container");
-        compose_project.down();
+        if !compose_project.down() {
+            error!("Failed to stop container");
+            return;
+        }
         warn!("Starting container");
-        compose_project.up();
+        if !compose_project.up() {
+            error!("Failed to start container");
+            return;
+        }
     } else {
         info!("No change to images");
     }
