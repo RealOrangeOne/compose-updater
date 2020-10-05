@@ -18,6 +18,9 @@ struct Opt {
 
     #[structopt(long)]
     force_cycle: bool,
+
+    #[structopt(long)]
+    force_pull: bool,
 }
 
 fn get_files(files: &[String]) -> Option<Vec<PathBuf>> {
@@ -35,10 +38,10 @@ fn get_files(files: &[String]) -> Option<Vec<PathBuf>> {
     Some(all_files)
 }
 
-fn do_update(compose_project: compose::ComposeProject, force_cycle: bool) {
+fn do_update(compose_project: compose::ComposeProject, force_cycle: bool, force_pull: bool) {
     info!("Processing {}...", compose_project);
     let pre_images = compose_project.get_images();
-    if pre_images.is_empty() {
+    if pre_images.is_empty() && !force_pull {
         warn!("no running images, skipping");
         return;
     }
@@ -89,6 +92,6 @@ fn main() {
     info!("Found {} projects", compose_projects.len());
 
     for compose_project in compose_projects {
-        do_update(compose_project, opts.force_cycle);
+        do_update(compose_project, opts.force_cycle, opts.force_pull);
     }
 }
